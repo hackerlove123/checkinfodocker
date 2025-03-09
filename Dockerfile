@@ -1,4 +1,3 @@
-# Sử dụng Alpine Linux làm base image
 FROM alpine
 
 # Cài đặt các gói cần thiết
@@ -18,7 +17,7 @@ RUN apk update && apk add --no-cache \
 # Thiết lập biến môi trường
 ENV TERM=xterm
 
-# Sao chép script vào container
+# Tạo script để chạy
 COPY monitor.sh /usr/local/bin/monitor.sh
 RUN chmod +x /usr/local/bin/monitor.sh
 
