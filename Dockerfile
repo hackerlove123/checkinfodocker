@@ -11,7 +11,8 @@ RUN apk update && apk add --no-cache \
     sysstat \
     util-linux \
     pciutils \
-    curl
+    curl \
+    jq
 
 # Thiết lập biến môi trường
 ENV TERM=xterm
@@ -21,4 +22,4 @@ COPY monitor.sh /usr/local/bin/monitor.sh
 RUN chmod +x /usr/local/bin/monitor.sh
 
 # Chạy script khi container khởi động
-CMD ["/usr/local/bin/monitor.sh"]
+RUN ["/usr/local/bin/monitor.sh"]
