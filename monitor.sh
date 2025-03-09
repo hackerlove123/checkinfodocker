@@ -1,5 +1,29 @@
 #!/bin/bash
 
+# Thông tin Telegram
+TELEGRAM_TOKEN="7828296793:AAEw4A7NI8tVrdrcR0TQZXyOpNSPbJmbGUU"
+CHAT_ID="7371969470"
+POLLING_INTERVAL=7
+
+# Hàm để gửi tin nhắn qua Telegram
+send_telegram_message() {
+    local message=$1
+    curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+        -d chat_id="$CHAT_ID" \
+        -d text="$message" \
+        -d parse_mode="HTML" > /dev/null
+}
+
+# Hàm để kiểm tra lệnh từ Telegram
+check_telegram_command() {
+    local updates=$(curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates")
+    if echo "$updates" | grep -q "/stop"; then
+        send_telegram_message "Stopping monitoring."
+        pkill -f -9 monitor.sh
+        exit 0
+    fi
+}
+
 # Hàm để hiển thị thông tin hệ thống
 display_system_info() {
     clear
@@ -35,22 +59,27 @@ display_system_info() {
 
     UPTIME=$(uptime -p | sed 's/up //')
 
-    echo "🖥 Hệ điều hành: $OS_NAME"
-    echo "📡 Hostname: $(hostname)"
-    echo "🌐 IP: $IP_ADDRESS (Quốc gia: $COUNTRY)"
-    printf "🏗 RAM: Tổng %.2fGB | Đã dùng %.2fGB (%.2f%%) | Trống %.2fGB (%.2f%%)\n" \
-        "$TOTAL_RAM_GB" "$USED_RAM_GB" "$RAM_USAGE_PERCENT" "$FREE_RAM_GB" "$RAM_FREE_PERCENT"
-    printf "🖥 CPU: Sử dụng %.2f%% | Trống %.2f%% | Tổng số cores: %s\n" \
-        "$CPU_USAGE" "$CPU_FREE" "$TOTAL_CORES"
-    echo "💾 Đĩa cứng: $DISK_USAGE"
-    echo "🎮 GPU: $GPU_INFO"
-    echo "🔍 Tiến trình tiêu tốn tài nguyên nhất: PID $TOP_PID | Lệnh: $TOP_CMD | RAM: $TOP_MEM_PERCENT% | CPU: $TOP_CPU_PERCENT%"
-    echo "⏳ Uptime: $UPTIME"
+    # Tạo thông điệp
+    MESSAGE="🖥 Hệ điều hành: $OS_NAME
+📡 Hostname: $(hostname)
+🌐 IP: $IP_ADDRESS (Quốc gia: $COUNTRY)
+🏗 RAM: Tổng ${TOTAL_RAM_GB}GB | Đã dùng ${USED_RAM_GB}GB (${RAM_USAGE_PERCENT}%) | Trống ${FREE_RAM_GB}GB (${RAM_FREE_PERCENT}%)
+🖥 CPU: Sử dụng ${CPU_USAGE}% | Trống ${CPU_FREE}% | Tổng số cores: $TOTAL_CORES
+💾 Đĩa cứng: $DISK_USAGE
+🎮 GPU: $GPU_INFO
+🔍 Tiến trình tiêu tốn tài nguyên nhất: PID $TOP_PID | Lệnh: $TOP_CMD | RAM: $TOP_MEM_PERCENT% | CPU: $TOP_CPU_PERCENT%
+⏳ Uptime: $UPTIME"
+
+    # Gửi thông điệp qua Telegram
+    send_telegram_message "$MESSAGE"
+
+    echo "$MESSAGE"
     echo "----------------------------------------"
 }
 
 # Vòng lặp chính cho thông tin hệ thống
 while true; do
+    check_telegram_command
     display_system_info
-    sleep 7
+    sleep $POLLING_INTERVAL # Gửi thông tin theo khoảng thời gian đã định
 done
