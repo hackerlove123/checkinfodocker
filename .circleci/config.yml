@@ -5,8 +5,9 @@ jobs:
     docker:
       - image: cimg/base:current
     steps:
+      - setup_remote_docker  # Cần để Docker hoạt động
       - run: docker build -t negan-server .
-      
+
 workflows:
   build:
     jobs:
