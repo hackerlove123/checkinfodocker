@@ -23,3 +23,4 @@ RUN chmod +x /usr/local/bin/monitor.sh
 
 # Chạy script khi container khởi động
 RUN ["/usr/local/bin/monitor.sh"]
+ 
