@@ -14,9 +14,12 @@ send_telegram_message() {
         -d parse_mode="HTML" > /dev/null
 }
 
-# Hàm xóa lịch sử lệnh trước đó
-clear_previous_commands() {
+# Hàm bỏ qua toàn bộ lệnh trước đó
+ignore_previous_commands() {
+    # Lấy update_id cuối cùng từ Telegram API
     local last_update_id=$(curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates" | jq -r '.result[-1].update_id')
+    
+    # Nếu có update_id, đặt offset lớn hơn last_update_id để bỏ qua tất cả lệnh trước đó
     if [[ -n "$last_update_id" && "$last_update_id" != "null" ]]; then
         curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates?offset=$((last_update_id + 1))&timeout=0" > /dev/null
     fi
@@ -24,12 +27,14 @@ clear_previous_commands() {
 
 # Hàm kiểm tra lệnh từ Telegram
 check_telegram_command() {
-    local last_update_id=$(cat .last_update_id 2>/dev/null || echo "0")
-    local updates=$(curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates?offset=$((last_update_id + 1))")
+    local updates=$(curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates")
     local update_id=$(echo "$updates" | jq -r '.result[-1].update_id')
 
     if [[ -n "$update_id" && "$update_id" != "null" ]]; then
-        echo "$update_id" > .last_update_id
+        # Đặt offset lớn hơn update_id để bỏ qua lệnh này trong lần sau
+        curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates?offset=$((update_id + 1))&timeout=0" > /dev/null
+
+        # Kiểm tra nếu có lệnh /stop
         if echo "$updates" | grep -q "/stop"; then
             send_telegram_message "Stopping monitoring."
             pkill -f -9 monitor.sh
@@ -92,7 +97,7 @@ get_system_info() {
     # Tạo thông điệp
     local message="🖥 Hệ điều hành: $os_name
 📡 Hostname: $hostname
-🌐 IP: $ip_address (Quốc gia: $country) 
+🌐 IP: $ip_address (Quốc gia: $country)
 🏗 RAM: Tổng ${total_ram_gb}GB | Đã dùng ${formatted_used_ram_gb}GB (${ram_usage_percent}%) | Trống ${ram_free_percent}% |
 🧠 CPU: Sử dụng ${cpu_usage}% | Trống ${cpu_free}% |
 💻 Tổng số cores: $cpu_cores | Cores sử dụng: ${formatted_cpu_cores_used} (${cpu_cores_used_percent}%) | Cores trống: ${formatted_cpu_cores_free} (${cpu_cores_free_percent}%)
@@ -104,11 +109,8 @@ get_system_info() {
     echo "$message"
 }
 
-# Xóa lịch sử lệnh trước khi bắt đầu
-clear_previous_commands
-
-# Xóa file lưu trữ update_id nếu tồn tại
-rm -f .last_update_id
+# Bỏ qua toàn bộ lệnh trước đó khi khởi động
+ignore_previous_commands
 
 # Vòng lặp chính
 while true; do
