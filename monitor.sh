@@ -1,4 +1,4 @@
-#!/bin/bash hello
+#!/bin/bash
 
 # Thông tin Telegram
 TELEGRAM_TOKEN="7828296793:AAEw4A7NI8tVrdrcR0TQZXyOpNSPbJmbGUU"
