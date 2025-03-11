@@ -92,7 +92,7 @@ get_system_info() {
     # Tạo thông điệp
     local message="🖥 Hệ điều hành: $os_name
 📡 Hostname: $hostname
-🌐 IP: $ip_address (Quốc gia: $country)
+🌐 IP: $ip_address (Quốc gia: $country) 
 🏗 RAM: Tổng ${total_ram_gb}GB | Đã dùng ${formatted_used_ram_gb}GB (${ram_usage_percent}%) | Trống ${ram_free_percent}% |
 🧠 CPU: Sử dụng ${cpu_usage}% | Trống ${cpu_free}% |
 💻 Tổng số cores: $cpu_cores | Cores sử dụng: ${formatted_cpu_cores_used} (${cpu_cores_used_percent}%) | Cores trống: ${formatted_cpu_cores_free} (${cpu_cores_free_percent}%)
