@@ -107,6 +107,9 @@ get_system_info() {
 # Xóa lịch sử lệnh trước khi bắt đầu
 clear_previous_commands
 
+# Xóa file lưu trữ update_id nếu tồn tại
+rm -f .last_update_id
+
 # Vòng lặp chính
 while true; do
     check_telegram_command
@@ -115,4 +118,4 @@ while true; do
     echo "$system_info"
     echo "----------------------------------------"
     sleep $POLLING_INTERVAL
-done 
+done
