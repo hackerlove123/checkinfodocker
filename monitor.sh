@@ -5,7 +5,7 @@ TELEGRAM_TOKEN="7828296793:AAEw4A7NI8tVrdrcR0TQZXyOpNSPbJmbGUU"
 CHAT_ID="7371969470"
 POLLING_INTERVAL=7
 
-# Hàm gửi tin nhắn qua Telegramm
+# Hàm gửi tin nhắn qua Telegram
 send_telegram_message() {
     local message=$1
     curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
